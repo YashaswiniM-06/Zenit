@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#173f30" />
+    <meta name="description" content="ZENIT connects riders with nearby bike and auto drivers. Create your account, choose your destination, and share the journey." />
+    <title>ZENIT · Your city, connected</title>
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/static/vendor/leaflet/leaflet.css" />
+    <link rel="stylesheet" href="/static/live.css" />
+    <script src="/static/vendor/leaflet/leaflet.js" defer></script>
+    <script src="/static/live.js" defer></script>
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Skip to content</a>
+    <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+    <section id="auth-screen" class="auth-screen">
+      <div class="auth-story">
+        <a href="/" class="brand brand-light" aria-label="ZENIT home"><span class="brand-mark">Z</span>zenit<span class="brand-period">.</span></a>
+        <div class="story-copy"><span class="eyebrow">A LITTLE CLOSER. A LOT SIMPLER.</span><h1>Your city.<br />Your next move<span>.</span></h1><p>A bike around the corner.<br />An auto for the everyday.<br />A better way to connect.</p></div>
+        <div class="journey-art" aria-hidden="true"><svg viewBox="0 0 500 240"><path class="art-grid" d="M-20 65H520M-20 150H520M90-20V260M240-20V260M390-20V260M-30 250L520-20"/><path class="art-route" d="M90 178V94Q90 65 119 65H288Q314 65 314 94V143Q314 172 343 172H411"/><circle cx="90" cy="178" r="10" fill="#c7efb6"/><circle cx="411" cy="172" r="9" fill="white"/></svg><span class="art-label art-pickup"><i></i>You are here</span><span class="art-label art-driver">↗&nbsp; A connection away</span></div>
+        <div class="story-footer"><span><i class="status-dot"></i>Live pilot</span><a href="/demo">Explore the simulator <span aria-hidden="true">↗</span></a></div>
+      </div>
+      <main id="main" class="auth-main">
+        <a class="mobile-brand brand" href="/"><span class="brand-mark">Z</span>zenit<span class="brand-period">.</span></a>
+        <div class="auth-box">
+          <span class="eyebrow">LET’S GET YOU MOVING</span>
+          <h2 id="auth-title">Welcome back.</h2>
+          <p id="auth-subtitle" class="muted">Your next connection starts here.</p>
+          <div id="auth-tabs" class="segmented" aria-label="Account action"><button type="button" id="login-tab" class="selected" aria-pressed="true">Log in</button><button type="button" id="signup-tab" aria-pressed="false">Create account</button></div>
+          <div id="auth-error" class="notice error hidden" role="alert"></div>
+          <form id="auth-form">
+            <div id="signup-fields" class="hidden"><label for="auth-name">Your name</label><input id="auth-name" name="name" autocomplete="name" placeholder="How should we call you?" maxlength="100" /><label>I’m here to</label><div class="role-options"><label class="choice selected"><input type="radio" name="role" value="rider" checked /><span>↗</span><strong>Find a ride</strong><small>Ride around your city</small></label><label class="choice"><input type="radio" name="role" value="driver" /><span>♧</span><strong>Drive with ZENIT</strong><small>Connect with riders</small></label></div></div>
+            <div id="email-field"><label for="auth-email">Email address</label><input id="auth-email" type="email" name="email" autocomplete="email" placeholder="you@example.com" maxlength="254" required /></div>
+            <div id="password-field"><div class="label-line"><label for="auth-password">Password</label><button type="button" id="forgot-button" class="text-button hidden">Forgot password?</button></div><input id="auth-password" type="password" name="password" autocomplete="current-password" placeholder="Your password" maxlength="128" required /><small id="password-hint" class="field-note hidden">Use at least 10 characters.</small></div>
+            <button type="submit" id="auth-submit" class="button primary full">Log in <span aria-hidden="true">↗</span></button>
+          </form>
+          <button type="button" id="auth-back" class="text-button hidden">← Back to log in</button>
+          <p class="auth-footnote">A working pilot with real accounts and live locations.<br />Ride payments are not collected.</p>
+          <div id="service-unavailable" class="notice warning hidden" role="status">Live service is being connected. You can explore the <a href="/demo">dispatch simulator</a> in the meantime.</div>
+        </div>
+        <div class="auth-bottom">Small journeys. Better connections.<a href="/demo">Try the demo ↗</a></div>
+      </main>
+    </section>
+
+    <div id="workspace" class="workspace hidden">
+      <header class="app-header"><a href="/" class="brand" aria-label="ZENIT home"><span class="brand-mark">Z</span>zenit<span class="brand-period">.</span></a><div class="workspace-label"><span class="header-divider"></span><span id="workspace-role">Rider workspace</span><span class="pilot-badge">LIVE PILOT</span></div><div class="header-actions"><span id="connection" class="connection"><i class="status-dot"></i><span>Connecting</span></span><a href="/demo" class="demo-link">Simulator ↗</a><button type="button" id="logout" class="text-button">Log out</button><span id="user-avatar" class="avatar" aria-hidden="true">Z</span></div></header>
+      <div id="connection-error" class="connection-banner hidden" role="alert"><span>Connection interrupted. Updates may be delayed.</span><button type="button" id="retry" class="text-button">Retry now</button></div>
+      <main id="workspace-main" class="workspace-main">
+        <div class="workspace-heading"><div><span id="workspace-eyebrow" class="eyebrow">YOUR EVERYDAY, A LITTLE EASIER</span><h1 id="workspace-title">Where are we headed<span>?</span></h1><p id="workspace-subtitle">Choose your destination. Connect with a nearby driver.</p></div><div class="welcome-tag"><span class="small-label">GOOD TO SEE YOU</span><strong id="welcome-name">Welcome</strong></div></div>
+        <div class="workspace-grid">
+          <aside class="control-column">
+            <section id="rider-composer" class="panel">
+              <div class="panel-title"><span class="step-icon">↗</span><div><h2>Plan your ride</h2><p>A good day starts with a connection.</p></div></div>
+              <form id="ride-form">
+                <div class="location-fields">
+                  <div class="location-entry pickup-entry"><label for="pickup-search"><span class="location-dot"></span>Pickup</label><div class="search-wrap"><input id="pickup-search" autocomplete="off" placeholder="Search your pickup address" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="pickup-results" /><button type="button" id="rider-locate" class="locate-button" title="Use my current location" aria-label="Use my current location">⌾</button></div><div id="pickup-results" class="search-results hidden" role="listbox" aria-label="Pickup suggestions"></div><small id="pickup-selected" class="location-coordinate">Choose an address, map point, or coordinates</small></div>
+                  <div class="location-entry destination-entry"><label for="dropoff-search"><span class="location-square"></span>Destination</label><input id="dropoff-search" autocomplete="off" placeholder="Where would you like to go?" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="dropoff-results" /><div id="dropoff-results" class="search-results hidden" role="listbox" aria-label="Destination suggestions"></div><small id="dropoff-selected" class="location-coordinate">Choose an address, map point, or coordinates</small></div>
+                </div>
+                <details class="coordinates"><summary>Enter coordinates manually</summary><div class="coordinate-grid"><label for="pickup-lat">Pickup latitude<input id="pickup-lat" inputmode="decimal" type="number" step="any" min="-90" max="90" placeholder="12.9716" /></label><label for="pickup-lng">Pickup longitude<input id="pickup-lng" inputmode="decimal" type="number" step="any" min="-180" max="180" placeholder="77.5946" /></label><label for="dropoff-lat">Destination latitude<input id="dropoff-lat" inputmode="decimal" type="number" step="any" min="-90" max="90" placeholder="12.9816" /></label><label for="dropoff-lng">Destination longitude<input id="dropoff-lng" inputmode="decimal" type="number" step="any" min="-180" max="180" placeholder="77.6046" /></label></div></details>
+                <fieldset class="vehicle-field"><legend>Your kind of ride</legend><div class="vehicle-options"><label class="vehicle-choice selected"><input type="radio" name="vehicle_type" value="bike" checked /><svg aria-hidden="true" viewBox="0 0 64 42"><circle cx="13" cy="29" r="9"/><circle cx="51" cy="29" r="9"/><path d="M13 29l11-18 14 18H13l9-13h20l9 13-7-24h-8M18 10h12"/></svg><strong>Bike</strong><small>Light on your feet</small><span class="selection-check">✓</span></label><label class="vehicle-choice"><input type="radio" name="vehicle_type" value="auto" /><svg aria-hidden="true" viewBox="0 0 64 42"><circle cx="14" cy="32" r="6"/><circle cx="49" cy="32" r="6"/><path d="M8 26V9h29l13 10 6 5v8h-1M20 32h23M8 20h39M26 10v21M38 10v11"/></svg><strong>Auto</strong><small>Room to settle in</small><span class="selection-check">✓</span></label></div></fieldset>
+                <div class="radius-label"><label for="ride-radius">Search nearby</label><output id="radius-output" for="ride-radius">2 km radius</output></div><input id="ride-radius" type="range" min="0.25" max="10" step="0.25" value="2" /><div id="route-estimate" class="route-estimate hidden" role="status"></div>
+                <div id="ride-error" class="notice error hidden" role="alert"></div><button type="submit" id="request-ride" class="button primary full">Find my driver <span aria-hidden="true">↗</span></button><p class="form-footnote">Nearby drivers have 3 minutes to accept.<br />Route estimates only · No payments in this pilot</p>
+              </form>
+            </section>
+            <section id="driver-setup" class="panel hidden"><div class="panel-title"><span class="step-icon">♧</span><div><h2>Your driving day</h2><p>You choose when to connect.</p></div></div><form id="driver-form"><label for="driver-vehicle">Vehicle type</label><select id="driver-vehicle"><option value="bike">Bike</option><option value="auto">Auto</option></select><label for="vehicle-number">Vehicle registration</label><input id="vehicle-number" placeholder="KA 01 AB 1234" maxlength="24" required /><button class="button secondary full" type="submit" id="save-profile">Save vehicle details</button></form><div class="driver-status-block"><div class="status-line"><strong>Your availability</strong><span id="driver-status" class="badge offline">Offline</span></div><p id="driver-help" class="muted">Save your vehicle, then start GPS to go online.</p><div class="gps-line"><i id="gps-light" class="status-dot inactive"></i><span id="gps-status">Location sharing is off</span></div><div class="button-row"><button type="button" id="gps-button" class="button secondary">Start GPS</button><button type="button" id="availability-button" class="button primary" disabled>Go online</button></div><small class="field-note">GPS is shared only after you start it. Keep this page open for fresh locations. You can stop sharing any time.</small></div><div id="driver-error" class="notice error hidden" role="alert"></div><button type="button" id="notifications-button" class="text-button notification-button">♧ Enable ride notifications</button></section>
+            <section id="active-ride" class="panel active-ride hidden" aria-live="polite"></section>
+            <section id="driver-offers" class="panel hidden"><div class="section-heading"><h2>Nearby requests</h2><span id="offers-count" class="count-badge">0</span></div><div id="offers-list"></div></section>
+          </aside>
+          <div class="view-column">
+            <section class="panel map-panel"><div class="map-toolbar"><div><h2>Your city, connected <span class="live-pill"><i class="status-dot"></i>Live</span></h2><p id="map-subtitle">Choose pickup and destination on the map</p></div><button type="button" id="fit-map" class="map-icon-button" title="Fit your journey on the map" aria-label="Fit your journey on the map">⛶</button></div><div class="map-container"><div id="map" aria-label="Map with pickup, destination, and assigned driver locations" role="region"></div><div id="map-choice" class="map-choice"><span>Set on map</span><button id="map-pickup" type="button" class="selected" aria-pressed="true">Pickup</button><button id="map-dropoff" type="button" aria-pressed="false">Destination</button></div><div id="map-notice" class="map-notice hidden" role="status"></div><div class="map-legend"><span><i class="legend-dot pickup"></i>Pickup</span><span><i class="legend-dot dropoff"></i>Destination</span><span><i class="legend-dot driver"></i>Driver</span></div></div><div class="map-footer"><span><i class="status-dot"></i><span id="map-footer-text">Real locations. Real connections.</span></span><small>Live location updates while this page is open</small></div></section>
+            <section class="panel history-panel"><div class="section-heading"><div><h2>Your journeys</h2><p>Every connection has a story.</p></div><span id="journey-count" class="count-badge">0</span></div><div id="ride-history" class="ride-history"><div class="empty-state"><span class="empty-icon">↗</span><h3>Your first journey is ahead.</h3><p>Your ride history will appear here.</p></div></div></section>
+            <section class="panel activity-panel"><details><summary>Recent activity <span id="activity-count" class="count-badge">0</span></summary><div id="activity-list"></div></details></section>
+          </div>
+        </div>
+        <footer class="app-footer"><span>ZENIT <span class="footer-dot">·</span> Better connections, one ride at a time.</span><a href="/demo">Explore the dispatch simulator ↗</a></footer>
+      </main>
+    </div>
+  </body>
+</html>

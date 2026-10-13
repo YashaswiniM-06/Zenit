@@ -18,6 +18,10 @@ from app.models import (
     DriverUpdate, EmptyRequest, Event, SimulationTick, State, VehicleType,
 )
 from app.service import DispatchService
+from app.live_api import live_router
+from app.live_auth import AuthRateLimiter, LiveSettings
+from app.live_db import LiveDatabase
+from app.live_service import LiveService
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 STATIC_ROOT = PROJECT_ROOT / "static"
@@ -35,14 +39,26 @@ def create_app(
     path = db_path if db_path is not None else os.getenv("ZENIT_DB_PATH", str(PROJECT_ROOT / "data" / "zenit.sqlite3"))
     database = Database(path)
     service = DispatchService(database, clock)
+    live_settings = LiveSettings.from_env()
+    live_database = LiveDatabase(live_settings.database_url)
+    live_service = LiveService(live_database, live_settings, clock)
+    live_limiter = AuthRateLimiter()
 
     @asynccontextmanager
     async def lifespan(application):
         try:
             await run_in_threadpool(service.initialize)
+            if live_settings.enabled:
+                try:
+                    await run_in_threadpool(live_database.initialize)
+                except Exception:
+                    # The public simulator remains useful when the separate
+                    # live database is unavailable; live routes fail closed.
+                    live_database.close()
             yield
         finally:
             await run_in_threadpool(database.close)
+            await run_in_threadpool(live_database.close)
 
     application = FastAPI(
         title="ZENIT — Smart Driver Dispatch",
@@ -56,6 +72,9 @@ def create_app(
     )
     application.state.database = database
     application.state.service = service
+    application.state.live_settings = live_settings
+    application.state.live_database = live_database
+    application.state.live_service = live_service
 
     @application.exception_handler(DispatchError)
     async def dispatch_error_handler(request: Request, error: DispatchError):
@@ -79,11 +98,15 @@ def create_app(
         # operation repeats the sweep under its own write lock before acting.
         if request.url.path == "/api" or request.url.path.startswith("/api/"):
             await run_in_threadpool(service.expire_pending)
+            if request.url.path.startswith("/api/live/"):
+                await run_in_threadpool(live_service.sweep)
         return await call_next(request)
 
     @application.get("/health", tags=["Health"])
     def health():
         return {"status": "ok"}
+
+    application.include_router(live_router(live_service, live_settings, live_limiter))
 
     @application.get("/api/state", response_model=State, tags=["Dispatch"])
     def get_state():
@@ -139,6 +162,10 @@ def create_app(
 
     @application.get("/", response_class=FileResponse, include_in_schema=False)
     def dashboard():
+        return FileResponse(STATIC_ROOT / "live.html")
+
+    @application.get("/demo", response_class=FileResponse, include_in_schema=False)
+    def demo_dashboard():
         return FileResponse(STATIC_ROOT / "index.html")
 
     application.mount("/static", StaticFiles(directory=str(STATIC_ROOT), check_dir=False), name="static")

@@ -1,9 +1,10 @@
-# ZENIT — Smart Driver Dispatch Mini-Simulator
+# ZENIT — Smart Driver Dispatch
 
-ZENIT is a working ride dispatch prototype: request a bike or auto, find nearby
-available drivers, let one driver accept, and cancel or complete the ride. The
-dashboard, JSON API, SQLite persistence, deterministic movement simulation, and
-automated tests run locally. **No API keys are required.**
+ZENIT has two working experiences in one FastAPI app: `/` is a real rider/driver
+pilot with accounts, opt-in GPS, live matching, and private Supabase PostgreSQL
+storage. `/demo` is the original no-key dispatch simulator with a seeded
+Bengaluru fleet and deterministic movement. The live pilot does not collect
+payments and is designed for free-tier pilot use.
 
 ![ZENIT dispatch dashboard](docs/screenshots/dashboard.jpg)
 
@@ -20,12 +21,13 @@ python -m pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-Open [the dashboard](http://127.0.0.1:8000),
+Open [the live pilot](http://127.0.0.1:8000),
+[the simulator](http://127.0.0.1:8000/demo),
 [interactive API documentation](http://127.0.0.1:8000/docs), or
 [the health check](http://127.0.0.1:8000/health).
 On Windows, activate the environment with `.venv\Scripts\activate`.
 
-The first start seeds twelve drivers near central Bengaluru: six bikes and six
+The demo first start seeds twelve drivers near central Bengaluru: six bikes and six
 autos, including one offline driver in each category. The default pickup is
 `12.9716, 77.5946`; the default search radius is 2 km. The SQLite database is
 `data/zenit.sqlite3`. Set `ZENIT_DB_PATH` to choose another location:
@@ -71,6 +73,45 @@ fleet. It is provided for repeatable demonstrations.
 | Updated driver and booking status | Dashboard state, booking history, API, and event log |
 | Automated tests | Matching, validation, lifecycle, expiry, persistence, movement, and concurrent acceptance |
 | Visual bonus | Distinct bike/auto markers, simulated movement, event log |
+
+## Live pilot
+
+The landing page supports rider and driver accounts with secure, HTTP-only
+sessions. Passwords use scrypt hashes; the server stores only hashed session and
+reset tokens. Live data uses an isolated `zenit` schema in Supabase PostgreSQL;
+it is never exposed through Supabase's public Data API.
+
+Drivers explicitly start location sharing before going online. A position is
+fresh for 90 seconds and is sent only while the page is open. Riders can search
+addresses and get driving estimates through Geoapify, or enter coordinates by
+hand. An offer lasts three minutes. Only the rider and the accepted driver can
+view a live ride.
+
+### Configure locally
+
+Copy `.env.example` to `.env` and supply a Supabase **Session pooler** URL,
+Geoapify key, and local base URL. Session pooler is required for Render because
+Supabase's direct database endpoint is IPv6-only while Render's free web
+instances use IPv4 egress.
+
+```bash
+cp .env.example .env
+set -a; source .env; set +a
+uvicorn app.main:app --reload
+```
+
+Use `COOKIE_SECURE=false` locally and `true` on HTTPS hosting. The public
+Geoapify browser key is returned only by `/api/live/config`; database and email
+credentials are never returned by the API or committed to Git.
+
+### Email recovery and Firebase
+
+Firebase is optional. Its web configuration can support analytics or browser
+notifications, but it does not send password-recovery email. Gmail SMTP can send
+recovery messages using a Gmail App Password, though Render free instances block
+outbound SMTP ports. For a deployed free pilot, configure Resend
+(`RESEND_API_KEY` and `MAIL_FROM`) because it uses HTTPS. Sign-up and password
+login work without an email provider.
 
 ## API
 
