@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#173f30" />
+    <meta
+      name="description"
+      content="ZENIT — a working smart driver dispatch simulator with nearby matching, driver acceptance, and ride management."
+    />
+    <title>ZENIT · Dispatch workspace</title>
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/static/styles.css" />
+    <script src="/static/app.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to workspace</a>
+    <aside class="sidebar">
+      <a class="brand" href="/" aria-label="ZENIT home"
+        ><span class="brand-mark">Z<span></span></span
+        ><span>zenit<span class="brand-period">.</span></span></a
+      >
+      <div class="workspace-switch">
+        <span class="workspace-icon">B</span>
+        <div>Bengaluru workspace<small>Dispatch simulator</small></div>
+        <span class="chevron">⌄</span>
+      </div>
+      <div class="nav-label">WORKSPACE</div>
+      <nav aria-label="Workspace navigation">
+        <button class="nav-link active" data-nav="overview">
+          <span class="nav-icon">▦</span>Overview
+        </button>
+        <button class="nav-link" data-nav="queue">
+          <span class="nav-icon">≋</span>Dispatch queue<span
+            id="nav-queue-count"
+            class="nav-count"
+            >0</span
+          >
+        </button>
+        <button class="nav-link" data-nav="fleet">
+          <span class="nav-icon">♧</span>Driver fleet
+        </button>
+        <button class="nav-link" data-nav="activity">
+          <span class="nav-icon">◷</span>Activity log
+        </button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="demo-note">
+          <span class="demo-icon">✦</span
+          ><strong>Your dispatch playground</strong>
+          <p>Real matching logic.<br />A city in simulation.</p>
+          <span class="demo-tag">NO API KEYS NEEDED</span>
+        </div>
+        <a class="nav-link" href="/docs" target="_blank" rel="noopener"
+          ><span class="nav-icon">↗</span>API documentation</a
+        >
+        <button class="nav-link reset-link" id="reset-open">
+          <span class="nav-icon">↺</span>Reset simulation
+        </button>
+        <div class="profile">
+          <span class="avatar">Z</span>
+          <div>ZENIT Operations<small>Local demo workspace</small></div>
+          <span class="profile-dot"></span>
+        </div>
+      </div>
+    </aside>
+
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="breadcrumb">
+          Workspace <span>/</span>
+          <strong id="breadcrumb-current">Overview</strong>
+        </div>
+        <div class="topbar-right">
+          <span id="connection" class="connection"><i></i>Connecting</span
+          ><span class="topbar-divider"></span
+          ><span class="local-date" id="local-date"></span
+          ><span class="top-avatar">ZO</span>
+        </div>
+      </header>
+      <main id="main">
+        <div id="connection-error" class="connection-error hidden" role="alert">
+          Cannot reach the server. Your data is safe; reconnecting…
+          <button id="retry">Retry now</button>
+        </div>
+        <div class="page-heading">
+          <div>
+            <span class="eyebrow">THE CITY KEEPS MOVING</span>
+            <h1 id="page-title">Every ride, right on time<span>.</span></h1>
+            <p id="page-subtitle">
+              Find the right driver. Make the connection. Keep Bengaluru moving.
+            </p>
+          </div>
+          <button class="primary-button" id="new-ride-top">
+            <span>＋</span> New ride request
+          </button>
+        </div>
+
+        <section class="stats-grid" aria-label="Dispatch statistics">
+          <article class="stat-card">
+            <span class="stat-icon green">♧</span>
+            <div>
+              <span class="stat-label">Available drivers</span
+              ><strong id="stat-drivers">—</strong
+              ><small>Ready for their next ride</small>
+            </div>
+            <span class="stat-trend"><i></i>Live</span>
+          </article>
+          <article class="stat-card">
+            <span class="stat-icon amber">↗</span>
+            <div>
+              <span class="stat-label">Active bookings</span
+              ><strong id="stat-active">—</strong
+              ><small>Pending &amp; assigned rides</small>
+            </div>
+          </article>
+          <article class="stat-card">
+            <span class="stat-icon blue">✓</span>
+            <div>
+              <span class="stat-label">Completed rides</span
+              ><strong id="stat-completed">—</strong
+              ><small>Connections made today</small>
+            </div>
+          </article>
+          <article class="stat-card">
+            <span class="stat-icon violet">≋</span>
+            <div>
+              <span class="stat-label">Total requests</span
+              ><strong id="stat-total">—</strong
+              ><small>Across this demo session</small>
+            </div>
+          </article>
+        </section>
+
+        <section class="dispatch-layout" id="overview-section">
+          <article class="panel map-panel">
+            <div class="panel-heading">
+              <div>
+                <h2>
+                  City overview <span class="live-pill"><i></i>Live</span>
+                </h2>
+                <p>
+                  Bengaluru, Karnataka
+                  <span class="dot-separator">·</span> Simulated street map
+                </p>
+              </div>
+              <button id="simulation-toggle" class="subtle-button">
+                <span class="play-icon">▷</span
+                ><span id="simulation-label">Start movement</span>
+              </button>
+            </div>
+            <div class="map-wrap">
+              <svg
+                id="city-map"
+                viewBox="0 0 1000 660"
+                role="img"
+                aria-label="Interactive simulated Bengaluru map. Click to choose a pickup location."
+              >
+                <defs>
+                  <pattern
+                    id="map-grain"
+                    width="20"
+                    height="20"
+                    patternUnits="userSpaceOnUse"
+                  >
+                    <circle
+                      cx="2"
+                      cy="2"
+                      r="0.65"
+                      fill="#c9ccbf"
+                      opacity=".24"
+                    />
+                  </pattern>
+                  <filter
+                    id="marker-shadow"
+                    x="-80%"
+                    y="-80%"
+                    width="260%"
+                    height="260%"
+                  >
+                    <feDropShadow
+                      dx="0"
+                      dy="3"
+                      stdDeviation="4"
+                      flood-color="#173f30"
+                      flood-opacity=".15"
+                    />
+                  </filter>
+                </defs>
+                <g id="map-scene"></g>
+              </svg>
+              <div class="map-location">
+                <span class="map-location-icon">⌖</span
+                ><span>Click anywhere to set pickup</span>
+              </div>
+              <div class="map-controls">
+                <button id="map-zoom-in" aria-label="Zoom in">＋</button
+                ><button id="map-zoom-out" aria-label="Zoom out">−</button
+                ><button id="map-center" aria-label="Center map on pickup">
+                  ⌖
+                </button>
+              </div>
+              <div class="map-legend">
+                <span><i class="legend-bike"></i>Bike</span
+                ><span><i class="legend-auto"></i>Auto</span
+                ><span><i class="legend-offline"></i>Offline / busy</span>
+              </div>
+              <span class="map-attribution"
+                >ZENIT · illustrative map, no live tiles</span
+              >
+            </div>
+            <div class="map-footer">
+              <span
+                ><i class="pulse-dot"></i
+                ><strong id="map-available">—</strong> drivers available
+                nearby</span
+              ><span>Default search radius <strong>2 km</strong></span>
+            </div>
+          </article>
+
+          <article class="panel request-panel" id="request-panel">
+            <div id="request-form-view">
+              <div class="panel-heading">
+                <div>
+                  <h2>Let’s get you moving</h2>
+                  <p>Create a ride. We’ll find your match.</p>
+                </div>
+                <span class="request-icon">↗</span>
+              </div>
+              <form id="ride-form">
+                <label class="field-label" for="rider-name"
+                  >RIDER NAME <span>Optional</span></label
+                ><input
+                  id="rider-name"
+                  maxlength="80"
+                  placeholder="Guest rider"
+                  autocomplete="name"
+                />
+                <label class="field-label" for="pickup-label"
+                  >PICKUP LOCATION</label
+                >
+                <div class="location-input">
+                  <span>⌖</span
+                  ><input
+                    id="pickup-label"
+                    maxlength="120"
+                    value="City center, Bengaluru"
+                    required
+                  />
+                </div>
+                <div class="preset-row">
+                  <button
+                    type="button"
+                    data-preset="center"
+                    class="preset active"
+                  >
+                    City center</button
+                  ><button type="button" data-preset="park" class="preset">
+                    Cubbon Park</button
+                  ><button type="button" data-preset="mg" class="preset">
+                    MG Road
+                  </button>
+                </div>
+                <div class="coordinate-row">
+                  <label for="pickup-lat"
+                    >Latitude<input
+                      type="number"
+                      id="pickup-lat"
+                      step="any"
+                      min="-90"
+                      max="90"
+                      value="12.971600"
+                      required /></label
+                  ><label for="pickup-lng"
+                    >Longitude<input
+                      type="number"
+                      id="pickup-lng"
+                      step="any"
+                      min="-180"
+                      max="180"
+                      value="77.594600"
+                      required
+                  /></label>
+                </div>
+                <fieldset class="vehicle-field">
+                  <legend class="field-label">YOUR RIDE, YOUR WAY</legend>
+                  <div class="vehicle-picker">
+                    <button
+                      type="button"
+                      class="vehicle-choice active"
+                      data-vehicle="bike"
+                      aria-pressed="true"
+                    >
+                      <svg viewBox="0 0 48 32" aria-hidden="true">
+                        <circle cx="10" cy="23" r="7" />
+                        <circle cx="38" cy="23" r="7" />
+                        <path
+                          d="m10 23 10-17 8 17H10l9-11h14l5 11M17 6h8m6-4h5l-3 10"
+                        /></svg
+                      ><span>Bike<small>Quick &amp; nimble</small></span
+                      ><i></i></button
+                    ><button
+                      type="button"
+                      class="vehicle-choice"
+                      data-vehicle="auto"
+                      aria-pressed="false"
+                    >
+                      <svg viewBox="0 0 48 32" aria-hidden="true">
+                        <path
+                          d="M7 23V11l6-7h20l7 13v6H7ZM9 11h26M24 4v19m-9-12v12m22-9h-7"
+                        />
+                        <circle cx="14" cy="25" r="4" />
+                        <circle cx="35" cy="25" r="4" /></svg
+                      ><span>Auto<small>A little more room</small></span
+                      ><i></i>
+                    </button>
+                  </div>
+                </fieldset>
+                <div class="radius-label">
+                  <label class="field-label" for="radius">SEARCH RADIUS</label
+                  ><output id="radius-output" for="radius">2 km</output>
+                </div>
+                <input
+                  type="range"
+                  id="radius"
+                  min="0.25"
+                  max="10"
+                  step="0.25"
+                  value="2"
+                />
+                <div class="range-labels">
+                  <span>0.25 km</span><span>10 km</span>
+                </div>
+                <div class="match-note">
+                  <span class="match-note-icon">✦</span>
+                  <div>
+                    <strong id="match-count">Finding nearby drivers…</strong
+                    ><span id="match-description"
+                      >Only available drivers in your vehicle category.</span
+                    >
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  id="create-ride"
+                  class="primary-button submit-button"
+                >
+                  Find my driver <span>→</span>
+                </button>
+                <p class="form-footnote">
+                  Driver acceptance is simulated from the inbox.
+                </p>
+              </form>
+            </div>
+            <div id="booking-detail-view" class="hidden"></div>
+          </article>
+        </section>
+
+        <section class="lower-layout" id="lower-section">
+          <article class="panel queue-panel" id="queue-panel">
+            <div class="panel-heading">
+              <div>
+                <h2>
+                  Dispatch queue
+                  <span class="count-pill" id="queue-total">0</span>
+                </h2>
+                <p>From request to ride, all in one place.</p>
+              </div>
+              <div class="tab-group" role="group" aria-label="Filter bookings">
+                <button class="active" data-filter="active">Active</button
+                ><button data-filter="completed">Completed</button
+                ><button data-filter="all">All</button>
+              </div>
+            </div>
+            <div id="queue-content" class="queue-content"></div>
+          </article>
+          <article class="panel activity-panel" id="activity-panel">
+            <div class="panel-heading">
+              <div>
+                <h2>Activity feed</h2>
+                <p>A pulse on every dispatch.</p>
+              </div>
+              <span class="activity-symbol">◷</span>
+            </div>
+            <div id="event-feed" class="event-feed"></div>
+          </article>
+        </section>
+
+        <section class="panel fleet-panel hidden" id="fleet-section">
+          <div class="panel-heading">
+            <div>
+              <h2>Your driver fleet</h2>
+              <p>Availability and position are shared across all bookings.</p>
+            </div>
+            <span class="count-pill" id="fleet-total">12 drivers</span>
+          </div>
+          <div id="fleet-content" class="fleet-grid"></div>
+        </section>
+        <footer class="page-footer">
+          <span
+            ><span class="footer-logo">zenit.</span> Small simulator. Smart
+            connections.</span
+          ><span
+            >Built for the way a city moves
+            <span class="footer-arrow">↗</span></span
+          >
+        </footer>
+      </main>
+    </div>
+
+    <div
+      id="toast-region"
+      class="toast-region"
+      aria-live="polite"
+      aria-atomic="true"
+    ></div>
+    <dialog id="reset-dialog">
+      <div class="dialog-icon">↺</div>
+      <h2>Start a fresh simulation?</h2>
+      <p>
+        This clears all bookings and activity, then restores the original 12
+        demo drivers.
+      </p>
+      <div class="dialog-actions">
+        <button id="reset-cancel" class="secondary-button">
+          Keep exploring</button
+        ><button id="reset-confirm" class="primary-button">
+          Reset simulation
+        </button>
+      </div>
+    </dialog>
+  </body>
+</html>
