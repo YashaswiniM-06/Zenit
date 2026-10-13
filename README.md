@@ -8,6 +8,18 @@ payments and is designed for free-tier pilot use.
 
 **Deployed pilot:** [https://zenit-live.onrender.com](https://zenit-live.onrender.com)
 
+## Deployment
+
+| Service | URL | Status |
+| --- | --- | --- |
+| Live rider and driver pilot | [zenit-live.onrender.com](https://zenit-live.onrender.com) | `GET /api/live/health` verifies the PostgreSQL connection |
+| Interactive simulator | [zenit-live.onrender.com/demo](https://zenit-live.onrender.com/demo) | Seeded Bengaluru dispatch demo |
+
+The deployed service runs on Render with Supabase PostgreSQL for persistent
+accounts, sessions, driver profiles, rides, and activity events. Geoapify
+provides the address search, routing estimate, and map tiles. Render's free
+service may take a short time to wake after inactivity.
+
 ![ZENIT dispatch dashboard](docs/screenshots/dashboard.jpg)
 
 ## Run locally
