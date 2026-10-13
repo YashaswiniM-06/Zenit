@@ -6,6 +6,8 @@ storage. `/demo` is the original no-key dispatch simulator with a seeded
 Bengaluru fleet and deterministic movement. The live pilot does not collect
 payments and is designed for free-tier pilot use.
 
+**Deployed pilot:** [https://zenit-live.onrender.com](https://zenit-live.onrender.com)
+
 ![ZENIT dispatch dashboard](docs/screenshots/dashboard.jpg)
 
 ## Run locally
